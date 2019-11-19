@@ -1,48 +1,70 @@
 var cy = cytoscape({
 
-    container: document.getElementById('cy'), // container to render in
+  container: $('#cy'), // container to render in
 
-    elements: [ // list of graph elements to start with
-      { // node a
-        data: { id: 'a' }
-      },
-      { // node b
-        data: { id: 'b' }
-      },
-      { // edge ab
-        data: { id: 'ab', source: 'a', target: 'b' }
+  style: [ // the stylesheet for the graph
+    {
+      selector: 'node',
+      style: {
+        'background-color': '#666',
+        'label': 'data(id)'
       }
-    ],
+    },
 
-    style: [ // the stylesheet for the graph
-      {
-        selector: 'node',
-        style: {
-          'background-color': '#666',
-          'label': 'data(id)'
-        }
-      },
-
-      {
-        selector: 'edge',
-        style: {
-          'width': 3,
-          'line-color': '#ccc',
-          'target-arrow-color': '#ccc',
-          'target-arrow-shape': 'triangle'
-        }
+    {
+      selector: 'edge',
+      style: {
+        'width': 3,
+        'line-color': '#ccc',
+        'target-arrow-color': '#ccc',
+        'target-arrow-shape': 'triangle'
       }
-    ],
-
-    layout: {
-      name: 'grid',
-      rows: 1
     }
+  ],
 
+  zoom: 1,
+  pan: { x: 0, y: 0 }
+
+});
+
+
+var nodeCount = 0; //for id of node
+var previous = null; //for creatine vertices
+
+//adds node when doubl- clicked
+$("#cy").dblclick(function (e) {
+  let offset = cy.pan();
+  cy.add({
+    data: { id: ++nodeCount },
+    position: { x: e.pageX - offset.x, y: e.pageY - offset.y }
   });
+});
+
+//removes right-clicked node
+cy.on('cxttap', 'node, edge', function (e) {
+  cy.remove(cy.$('#' + e.target.id()));
+});
+
+// create edge when 2 nodes are clicked
+cy.on('tap', 'node', function (e) {
+  if (previous === null) {
+    previous = e.target.id();
+    return;
+  }
 
   cy.add({
-    group: 'nodes',
-    data: { id: 'd' },
-    position: { x: 200, y: 200 }
+    data: {
+      id: `[${previous},${e.target.id()}]`,
+      source: previous,
+      target: e.target.id()
+    }
   });
+
+  previous = null;
+
+//-----------gets edges of node
+for(edge of e.target._private.edges) {
+  console.log(edge.id());
+}
+
+});
