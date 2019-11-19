@@ -43,10 +43,11 @@ $("#cy").dblclick(function (e) {
 //phone doesn't have double-click
 if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
   cy.on('taphold', function (e) {
-    if (previous === null) {
-      previous = e.target.id();
-      return;
-    }
+    let offset = cy.pan();
+    cy.add({
+      data: { id: ++nodeCount },
+      position: { x: e.pageX - offset.x, y: e.pageY - offset.y }
+    });
   });
 }
 
