@@ -31,7 +31,7 @@ var cy = cytoscape({
 var nodeCount = 0; //for id of node
 var previous = null; //for creatine vertices
 
-//adds node when doubl- clicked
+//adds node when double-clicked
 $("#cy").dblclick(function (e) {
   let offset = cy.pan();
   cy.add({
@@ -39,6 +39,15 @@ $("#cy").dblclick(function (e) {
     position: { x: e.pageX - offset.x, y: e.pageY - offset.y }
   });
 });
+
+//phone doesn't have double-click
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+  cy.on('taphold', 'node', function (e) {
+    if (previous === null) {
+      previous = e.target.id();
+      return;
+    }
+ }
 
 //removes right-clicked node
 cy.on('cxttap', 'node, edge', function (e) {
@@ -54,7 +63,7 @@ cy.on('tap', 'node', function (e) {
 
   cy.add({
     data: {
-      id: `[${previous},${e.target.id()}]`,
+      id: previous + 'e' + e.target.id(),
       source: previous,
       target: e.target.id()
     }
