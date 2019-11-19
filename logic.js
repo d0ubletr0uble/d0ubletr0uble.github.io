@@ -47,7 +47,8 @@ if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
       previous = e.target.id();
       return;
     }
- }
+  });
+}
 
 //removes right-clicked node
 cy.on('cxttap', 'node, edge', function (e) {
