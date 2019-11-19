@@ -1,40 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-	<title>Tic Tac Toe</title>
-<link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Tomas Odinas</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.9.4/cytoscape.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
 </head>
+
 <body>
-<table>
-	<tr>
-		<td></td>
-		<td></td>
-		<td></td>
-	</tr>
-
-	<tr>
-		<td></td>
-		<td></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td></td>
-		<td></td>
-		<td></td>
-	</tr>
-
-	<tr>
-		<td class="special" id="player">Player turn: X</td>
-		<td class="special"><button onclick="location.reload();">Reload</button></td>
-		<td style="visibility: hidden;"></td>
-	</tr>
-
-</table>
-
-
-
-<br>
-<script type="text/javascript" src="script.js"></script>
+  <div id="cy"></div>
+  <script src="logic.js"></script>
 </body>
+
 </html>
