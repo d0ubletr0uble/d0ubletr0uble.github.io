@@ -1,25 +1,25 @@
 //canvas initialization
 var cy = cytoscape({
 
-    container: $('#cy'), // container to render in
+    container: $("#cy"), // container to render in
 
     style: [ // the stylesheet for the graph
         {
-            selector: 'node',
+            selector: "node",
             style: {
-                'background-color': '#666',
-                'label': 'data(id)'
+                "background-color": "#666",
+                "label": "data(id)"
             }
         },
 
         {
-            selector: 'edge',
+            selector: "edge",
             style: {
-                'width': '3',
-                'line-color': '#ccc',
-                'target-arrow-color': '#ccc',
-                'target-arrow-shape': 'triangle',
-                'label': 'data(label)'
+                "width": "3",
+                "line-color": "#ccc",
+                "target-arrow-color": "#ccc",
+                "target-arrow-shape": "triangle",
+                "label": "data(label)"
             }
         }
     ],
@@ -28,11 +28,10 @@ var cy = cytoscape({
     pan: { x: 0, y: 0 }
 
 });
+//--
 
-
-var nodeCount = 0; //for id of node
-var previous = null; //for creation of vertices
-
+//node add
+var nodeCount = 0; //sequentially
 //adds node when double-clicked
 $("#cy").dblclick(function(e) {
     let offset = cy.pan();
@@ -42,56 +41,91 @@ $("#cy").dblclick(function(e) {
     });
 });
 
-//phone doesn't have double-click so also adds node when tap-hold
-cy.on('taphold', function(e) {
+//phone doesn"t have double-click so also adds node when tap-hold
+cy.on("taphold", function(e) {
     let offset = cy.pan();
     cy.add({
         data: { id: ++nodeCount },
         position: { x: e.position.x, y: e.position.y }
     });
 });
+//--
 
-//removes right-clicked node
-cy.on('cxttap', 'node, edge', function(e) {
-    cy.remove(cy.$('#' + e.target.id()));
+//remove right-clicked element (on phones 2 finger tap)
+cy.on("cxttap", "node, edge", function(e) {
+    cy.remove(cy.$("#" + e.target.id()));
 });
 
-// create edge when 2 nodes are clicked
-cy.on('tap', 'node', function(e) {
-    if (previous === null) {
-        previous = e.target.id();
-        return;
-    }
+{ //edge creation
+    let previous = null; //to remember begining
 
-
-    let weight = prompt("Enter the weight for this edge", "1");
-
-    if (weight == null || weight == "")
-        weight = 1;
-
-    cy.add({
-        data: {
-            id: previous + 'e' + e.target.id(),
-            source: previous,
-            target: e.target.id(),
-            label: weight
+    // create edge when 2 nodes are clicked
+    cy.on("tap", "node", function(e) {
+        if (previous == null) {
+            previous = e.target.id();
+            return;
         }
+
+        do { //input edge weight
+            var weight = parseInt(window.prompt("Enter the weight for this edge", "1"), 10);
+        } while (isNaN(weight));
+
+        cy.add({ //add new edge with specified weight
+            data: {
+                id: previous + "e" + e.target.id(),
+                source: previous,
+                target: e.target.id(),
+                label: weight
+            }
+        });
+        previous = null;
     });
+} //--
 
-    previous = null;
-});
+{ //selecting START and END nodes
+    let start = null;
 
-function beginSearch(e) {
-    $(e).text('Select starting node');
+    function beginSearch(button) {
+        $(button).text("Select START");
 
-    cy.removeListener('tap', 'node');
+        cy.removeListener("tap", "node");
 
-    cy.on('tap', 'node', function(n) {
-        n.target.style('background-color', 'green');
+        cy.on("tap", "node", function(node) {
+            node.target.style("background-color", "green");
+            if (start == null) {
+                start = node.target.id();
+                $(button).text("Select END");
+            } else
+                calculatePath(start, node.target.id());
+        });
 
-    });
+    }
+} //--
 
+function calculatePath(start, end) {
+    let structures = reMapToAdjacencyStructure();
+    let adjacencyNodes = structures[0];
+    let adjacencyWeights = structures[1];
+
+    console.log('selected start: ' + start + '\n' + 'selected end: ' + end);
 }
 
+function reMapToAdjacencyStructure() { //to use arrays instead of what is given
+    let adjacencyNodes = [];
+    let adjacencyWeights = [];
 
-//todo .neighbourhood('edge or node') is defined
+    for (let i = 0; i < nodeCount; i++) {
+        let adjacentNodes = [];
+        let adjacentWeights = [];
+        cy.$id(i + 1).neighbourhood("node").forEach(
+            n => {
+                adjacentNodes.push(n.id()); //adjacent node
+                adjacentWeights.push(cy.$id(i + 1).edgesWith(n).data().label); //weight of path to that node
+            }
+        );
+
+        adjacencyNodes.push(adjacentNodes);
+        adjacencyWeights.push(adjacentWeights);
+    }
+    return [adjacencyNodes, adjacencyWeights];
+}
