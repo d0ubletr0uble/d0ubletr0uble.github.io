@@ -15,10 +15,11 @@ var cy = cytoscape({
         {
             selector: "edge",
             style: {
+                "curve-style": "bezier",
                 "width": "3",
                 "line-color": "#ccc",
-                "target-arrow-color": "#ccc",
                 "target-arrow-shape": "triangle",
+                "arrow-scale": "1.5",
                 "label": "data(label)"
             }
         }
@@ -95,32 +96,83 @@ cy.on("cxttap", "node, edge", function(e) {
             if (start == null) {
                 start = node.target.id();
                 $(button).text("Select END");
-            } else
+            } else {
                 calculatePath(start, node.target.id());
+                start = null;
+            }
         });
 
     }
 } //--
 
-function calculatePath(start, end) {
-    let structures = reMapToAdjacencyStructure();
-    let adjacencyNodes = structures[0];
-    let adjacencyWeights = structures[1];
 
-    console.log('selected start: ' + start + '\n' + 'selected end: ' + end);
+
+function calculatePath(start, end) {
+    let structure = getAdjacencyStructure();
+    let nodes = structure[0];
+    let edges = structure[1];
+
+    //initialization
+    let prec = Array(nodes.length).fill(0);
+    let d = Array(nodes.length).fill(Infinity);
+    d[start - 1] = 0;
+    prec[start - 1] = start;
+    //--
+
+    //Bellman-Ford algorythm
+    for (let i = 0; i < nodes.length - 1; i++) { //i N-1 times
+        for (let j = 0; j < nodes.length; j++) { //j nodes
+            for (let k = 0; k < edges[j].length; k++) { //k edges
+                let gretimas = nodes[j][k];
+                let kainuoja = edges[j][k];
+                if (d[gretimas - 1] > kainuoja + d[j]) {
+                    d[gretimas - 1] = kainuoja + d[j];
+                    prec[gretimas - 1] = j + 1;
+                }
+            }
+        }
+    }
+    //--
+    showResult(d, prec, start, end);
 }
 
-function reMapToAdjacencyStructure() { //to use arrays instead of what is given
+function showResult(d, prec, start, end) {
+    let result = [];
+    if (d[end - 1] != Infinity) {
+        let node = end;
+        while (node != start) {
+            result.unshift(node);
+            node = prec[node - 1];
+        }
+        result.unshift(start);
+
+        console.log("result: " + result);
+        console.log("d: " + d);
+        console.log("prec: " + prec);
+
+
+        for (const node of result) {
+            cy.$id(node).style({
+                "background-color": "green",
+                "border-width": "2",
+                "shape": "barrel"
+            });
+        }
+    } else
+        console.log("Path doen't exist :(");
+}
+
+function getAdjacencyStructure() { //to use arrays instead of what is given
     let adjacencyNodes = [];
     let adjacencyWeights = [];
 
     for (let i = 0; i < nodeCount; i++) {
         let adjacentNodes = [];
         let adjacentWeights = [];
-        cy.$id(i + 1).neighbourhood("node").forEach(
+        cy.$id(i + 1).neighbourhood(`edge[source="${i+1}"]`).forEach(
             n => {
-                adjacentNodes.push(n.id()); //adjacent node
-                adjacentWeights.push(cy.$id(i + 1).edgesWith(n).data().label); //weight of path to that node
+                adjacentNodes.push(n.target().id()); //adjacent node
+                adjacentWeights.push(n.data().label); //weight of path to that node
             }
         );
 
