@@ -22,6 +22,16 @@ var cy = cytoscape({
                 "arrow-scale": "1.5",
                 "label": "data(label)"
             }
+        },
+
+        {
+            selector: ".path",
+            style: {
+                "background-color": "green",
+                "line-color": "green",
+                "border-width": "2",
+                "shape": "barrel"
+            }
         }
     ],
 
@@ -44,7 +54,6 @@ $("#cy").dblclick(function(e) {
 
 //phone doesn"t have double-click so also adds node when tap-hold
 cy.on("taphold", function(e) {
-    let offset = cy.pan();
     cy.add({
         data: { id: ++nodeCount },
         position: { x: e.position.x, y: e.position.y }
@@ -57,55 +66,44 @@ cy.on("cxttap", "node, edge", function(e) {
     cy.remove(cy.$("#" + e.target.id()));
 });
 
-{ //edge creation
-    let previous = null; //to remember begining
+// create edge when 2 nodes are clicked
+cy.on("tap", "node", function(e) { createEdge(e); });
 
-    // create edge when 2 nodes are clicked
-    cy.on("tap", "node", function(e) {
-        if (previous == null) {
-            previous = e.target.id();
+{ //main button logic (3 states {enable node select}->{ask for second node}->{reset})
+    let start = null;
+    let state = false;
+    let listener = null;
+
+    function buttonClick(button) {
+        if (state) {
+            state = false;
+            $(button).text("Click me");
+            cy.$("node, edge").removeClass("path");
+            cy.removeListener("tap", "node");
+            cy.on("tap", "node", function(e) { createEdge(e); });
             return;
         }
 
-        do { //input edge weight
-            var weight = parseInt(window.prompt("Enter the weight for this edge", "1"), 10);
-        } while (isNaN(weight));
-
-        cy.add({ //add new edge with specified weight
-            data: {
-                id: previous + "e" + e.target.id(),
-                source: previous,
-                target: e.target.id(),
-                label: weight
-            }
-        });
-        previous = null;
-    });
-} //--
-
-{ //selecting START and END nodes
-    let start = null;
-
-    function beginSearch(button) {
-        $(button).text("Select START");
+        $(button).text("Select START node");
 
         cy.removeListener("tap", "node");
 
         cy.on("tap", "node", function(node) {
-            node.target.style("background-color", "green");
+            node.target.addClass("path");
+
             if (start == null) {
                 start = node.target.id();
-                $(button).text("Select END");
+                $(button).text("Select END node");
             } else {
                 calculatePath(start, node.target.id());
                 start = null;
+                state = true;
+                $(button).text("Again");
             }
         });
 
     }
 } //--
-
-
 
 function calculatePath(start, end) {
     let structure = getAdjacencyStructure();
@@ -151,15 +149,14 @@ function showResult(d, prec, start, end) {
         console.log("prec: " + prec);
 
 
-        for (const node of result) {
-            cy.$id(node).style({
-                "background-color": "green",
-                "border-width": "2",
-                "shape": "barrel"
-            });
+
+        for (let i = 0; i < result.length; i++) {
+            cy.$id(result[i]).addClass('path');
+            cy.$id(result[i]).neighborhood('edge[target="' + (result[i + 1]) + '"]').forEach(e => e.addClass('path'));
+
         }
     } else
-        console.log("Path doen't exist :(");
+        console.log("Path doesn't exist :(");
 }
 
 function getAdjacencyStructure() { //to use arrays instead of what is given
@@ -180,4 +177,35 @@ function getAdjacencyStructure() { //to use arrays instead of what is given
         adjacencyWeights.push(adjacentWeights);
     }
     return [adjacencyNodes, adjacencyWeights];
+}
+
+{
+    let previous = null; //to remember begining
+    function createEdge(e) {
+        if (previous == null) {
+            previous = e.target.id();
+            return;
+        }
+
+        do { //input edge weight
+            var weight = parseInt(window.prompt("Enter the weight for this edge", "1"), 10);
+        } while (isNaN(weight));
+
+        cy.add({ //add new edge with specified weight
+            data: {
+                id: previous + "e" + e.target.id(),
+                source: previous,
+                target: e.target.id(),
+                label: weight
+            }
+        });
+        previous = null;
+    }
+}
+
+function sort(layout) {
+    cy.layout({
+        name: layout,
+        animate: true
+    }).run();
 }
