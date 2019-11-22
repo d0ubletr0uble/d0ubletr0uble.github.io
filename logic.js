@@ -30,7 +30,7 @@ var cy = cytoscape({
                 "background-color": "green",
                 "line-color": "green",
                 "border-width": "2",
-                "shape": "barrel"
+                "shape": "heptagon"
             }
         }
     ],
@@ -118,19 +118,14 @@ function calculatePath(start, end) {
     //--
 
     //Bellman-Ford algorythm
-    for (let i = 0; i < nodes.length - 1; i++) { //i N-1 times
-        for (let j = 0; j < nodes.length; j++) { //j nodes
-            for (let k = 0; k < edges[j].length; k++) { //k edges
-                let gretimas = nodes[j][k];
-                let kainuoja = edges[j][k];
-                if (d[gretimas - 1] > kainuoja + d[j]) {
-                    d[gretimas - 1] = kainuoja + d[j];
-                    prec[gretimas - 1] = j + 1;
-                }
-            }
-        }
-    }
-    //--
+    for (let i = 0; i < nodes.length - 1; i++) //i N-1 times
+        for (let j = 0; j < nodes.length; j++) //j nodes
+            for (let k = 0; k < edges[j].length; k++) //k edges
+                if (d[nodes[j][k] - 1] > edges[j][k] + d[j]) {
+                    d[nodes[j][k] - 1] = edges[j][k] + d[j];
+                    prec[nodes[j][k] - 1] = j + 1;
+                } //--
+
     showResult(d, prec, start, end);
 }
 
@@ -206,6 +201,7 @@ function getAdjacencyStructure() { //to use arrays instead of what is given
 function sort(layout) {
     cy.layout({
         name: layout,
-        animate: true
+        animate: true,
+        zoom: 1
     }).run();
 }
