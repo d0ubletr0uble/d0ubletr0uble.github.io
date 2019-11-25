@@ -118,13 +118,23 @@ function calculatePath(start, end) {
     //--
 
     //Bellman-Ford algorythm
-    for (let i = 0; i < nodes.length - 1; i++) //i N-1 times
-        for (let j = 0; j < nodes.length; j++) //j nodes
-            for (let k = 0; k < edges[j].length; k++) //k edges
-                if (d[nodes[j][k] - 1] > edges[j][k] + d[j]) {
-                    d[nodes[j][k] - 1] = edges[j][k] + d[j];
-                    prec[nodes[j][k] - 1] = j + 1;
-                } //--
+    for (let i = 0; i < nodes.length - 1; i++) { //i N-1 times
+        for (let j = 0; j < nodes.length; j++) { //j nodes
+            for (let k = 0; k < edges[j].length; k++) { //k edges
+                let adjacent = nodes[j][k];
+                let price = edges[j][k];
+	   
+				if (d[adjacent - 1] > price + d[j]) {
+					
+					
+                    d[adjacent - 1] = price + d[j];
+                    prec[adjacent - 1] = j + 1;
+					
+                }
+            }
+        }
+    }
+    //--
 
     showResult(d, prec, start, end);
 }

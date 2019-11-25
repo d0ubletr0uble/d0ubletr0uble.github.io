@@ -1,4 +1,29 @@
+![Example1](Examples/example1.png)
+
+![Example2](Examples/example2.png)
+
+[Click here to try it yourself](https://d0ubletr0uble.github.io/)
+
+Instructions:
+Find shortest path: Click main button and then click start and end nodes
+
+Main button click after path was drawn returns to creator mode
+
+To add node: double left mouse button click
+
+To delete element: right button click
+
+To add connection: left click on 2 nodes
+
+Resize graph: scroll
+
+For mobile devices:
+Add node: tap and hold
+Remove element: 2 finger tap
+
+
 [Norint išbandyti programą spauskite čia](https://d0ubletr0uble.github.io/)
+
 
 Dokumentacija:
 
